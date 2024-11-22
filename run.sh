@@ -32,7 +32,14 @@ else
 fi
 
 # Password configuration
-JUPYTER_PASSWORD=$(openssl rand -base64 16)
+generate_password() {
+  local length=${1:-16}
+  local charset='A-Za-z0-9!@#$%^&*()-_'
+  local password=$(tr -dc "$charset" < /dev/urandom | head -c $((length * 2)))
+  password=$(echo "$password" | head -c $length)
+  echo "$password"
+}
+JUPYTER_PASSWORD=$(generate_password 48)
 
 # Create directories if they don't exist and set permissions
 echo "Creating notebook directories..."
