@@ -24,8 +24,12 @@ else
 fi
 
 # Prompt for IP address
-read -p "Enter container IP address (default: 172.18.0.2): " CONTAINER_IP
-CONTAINER_IP=${CONTAINER_IP:-172.18.0.2}
+read -p "Enter container IP address (or press Enter to skip): " CONTAINER_IP
+if [ -n "$CONTAINER_IP" ]; then
+    IP_FLAG="--ip $CONTAINER_IP"
+else
+    IP_FLAG=""
+fi
 
 # Password configuration
 JUPYTER_PASSWORD=$(openssl rand -base64 16)
@@ -80,7 +84,7 @@ echo "Starting container: $CONTAINER_NAME"
 docker run -d $GPU_FLAG \
     --name "$CONTAINER_NAME" \
     --network jupyter_net \
-    --ip "$CONTAINER_IP" \
+    $IP_FLAG \
     --user user \
     -v "$NOTEBOOK_DIR":/home/user/work \
     jupyter-gpu
