@@ -8,8 +8,11 @@ read -p "Enter container name (default: jupyter_container): " CONTAINER_NAME
 CONTAINER_NAME=${CONTAINER_NAME:-jupyter_container}
 
 # Prompt for notebook directory
-read -p "Enter notebook directory (default: $SCRIPT_DIR/notebooks): " NOTEBOOK_DIR
-NOTEBOOK_DIR=${NOTEBOOK_DIR:-$SCRIPT_DIR/notebooks}
+read -p "Enter notebook directory (default: notebooks): " NOTEBOOK_DIR
+NOTEBOOK_DIR=${NOTEBOOK_DIR:-$SCRIPT_DIR/volume/notebooks}
+if [[ "$NOTEBOOK_DIR" != "$SCRIPT_DIR"* ]]; then
+  NOTEBOOK_DIR="$SCRIPT_DIR/volume/$NOTEBOOK_DIR"
+fi
 
 # Prompt for GPU ID configuration
 echo "Configure GPU usage:"
