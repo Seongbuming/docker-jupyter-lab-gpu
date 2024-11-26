@@ -35,14 +35,21 @@ else
 fi
 
 # Password configuration
-generate_password() {
-  local length=${1:-16}
-  local charset='A-Za-z0-9!@#$%^&*()-_'
-  local password=$(tr -dc "$charset" < /dev/urandom | head -c $((length * 2)))
-  password=$(echo "$password" | head -c $length)
-  echo "$password"
-}
-JUPYTER_PASSWORD=$(generate_password 48)
+read -p "Do you want to set a custom Jupyter password? (y/N): " PASSWORD_OPTION
+if [[ "$PASSWORD_OPTION" =~ ^[Yy]$ ]]; then
+    read -sp "Enter your desired Jupyter password: " JUPYTER_PASSWORD
+    echo
+else
+    generate_password() {
+        local length=${1:-16}
+        local charset='A-Za-z0-9!@#$%^&*()-_'
+        local password=$(tr -dc "$charset" < /dev/urandom | head -c $((length * 2)))
+        password=$(echo "$password" | head -c $length)
+        echo "$password"
+    }
+    JUPYTER_PASSWORD=$(generate_password 48)
+    echo "Random Jupyter password generated: $JUPYTER_PASSWORD"
+fi
 
 # Create directories if they don't exist and set permissions
 echo "Creating notebook directories..."
@@ -87,6 +94,7 @@ with open('/home/user/.jupyter/jupyter_server_config.py', 'a') as f:
     # Restart Jupyter process
     docker exec $container_name pkill -f jupyter
     docker exec -d $container_name jupyter lab --ip=0.0.0.0 --port=8888 --no-browser
+    docker start $container_name
 }
 
 # Run container
@@ -95,6 +103,11 @@ docker run -d $GPU_FLAG \
     --name "$CONTAINER_NAME" \
     --network jupyter_net \
     $IP_FLAG \
+    -p 8888:8888 \
+    -p 5000:5000 \
+    -p 5001:5001 \
+    -p 3000:3000 \
+    -p 3001:3001 \
     --user user \
     -v "$NOTEBOOK_DIR":/home/user/work \
     jupyter-gpu
